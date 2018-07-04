@@ -4,11 +4,9 @@
   "description": "A GUI and CLI tool for generating mock MongoDB data",
   "preferGlobal": true,
   "bin": {
-    "mongo-data": "./bin/index.js"
+    "mongobuddy": "./bin/mongo-buddy.js"
   },
   "scripts": {
-    "check-connection": "node_modules/.bin/ts-node main.ts",
-    "lint": "tslint --project tsconfig.json lib/**.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -32,14 +30,9 @@
     "@types/mongodb": "^3.1.1",
     "chalk": "^2.4.1",
     "commander": "^2.16.0",
-    "mongodb": "^3.1.0",
-    "tslib": "^1.9.3"
+    "mongodb": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^10.5.1",
-    "ts-node": "^7.0.0",
-    "tslint": "^5.10.0",
-    "tslint-config-airbnb": "^5.9.2",
-    "typescript": "^2.9.2"
+    "@types/node": "^10.5.1"
   }
 }
