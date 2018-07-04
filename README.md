@@ -1,2 +1,2 @@
-# mongo-data-generator
-A GUI and CLI for generating mock data in MongoDB
+# mongo-buddy
+A CLI for MongoDB utilities such as viewing connection details and generating mock data.
