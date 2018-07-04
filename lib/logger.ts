@@ -19,7 +19,7 @@ export class Logger {
     this.breakLine();
     this.divider();
   }
-  
+
 }
 
 export const logger = new Logger();

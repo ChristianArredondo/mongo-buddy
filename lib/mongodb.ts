@@ -1,5 +1,4 @@
 import { MongoClient, Db } from 'mongodb';
-import chalk from 'chalk';
 import { logger } from './logger';
 
 export class MongoDb {
