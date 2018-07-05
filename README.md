@@ -19,7 +19,7 @@ npm install -g ./
 
 ```bash
 # run `mongobuddy check` with proper inputs
-mongobudy check --db my-test-db
+mongobuddy check --db my-test-db
 ```
 Sample result:
 
