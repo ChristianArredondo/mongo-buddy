@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+const fs = require('fs');
 const mongoBuddy = require('commander');
 const chalk = require('chalk');
 const { mongodb } = require('../lib/mongodb');
@@ -7,8 +8,11 @@ const { logger } = require('../lib/logger');
 
 Array.prototype.toMongoBuddyModel = function() {
   const model = {}, errors = [];
-  for (let i = 0; i < this.length; i += 2) {
-    let argStr = this[i], [prop, val, ...extras] = this[i+1].split(':');
+  // TODO. better workflow for pulling --name and value from array
+  const props = this.filter(el => el === '--p' || el.split(':').length === 2);
+  for (let i = 0; i < props.length; i += 2) {
+    let argStr = props[i], [prop, val, ...extras] = props[i+1].split(':');
+    // TODO. consider creating error class
     if (prop && !val) {
       errors.push(`Property "${prop}" has no associated type (i.e. "${prop}:string").`);
     } else if (!prop && val) {
@@ -63,21 +67,28 @@ mongoBuddy
   .command('gen-model')
   .alias('gm')
   .description('Generate document model to be used for generating mock data')
-  .option('--n <name>', 'model name (required)')
+  .option('--name <name>', 'model name (required)')
   .option('--p <prop>', 'property name and type (can be multiple, i.e. --p name:string --p age:int)')
-  .action((a) => {
-    const props = a.parent.rawArgs.slice(3,);
+  .action(({ parent, name }) => {
+    if (!(parent && name)) {
+      return console.error(chalk.redBright('Unable to parse arguments. Please ensure that each property follows the syntax "prop:type".'));
+    }
+    const props = parent.rawArgs.slice(3,);
     if (!props.length) {
-      console.error(chalk.redBright('You must supply at least one property!'));
-      return;
+      return console.error(chalk.redBright('You must supply at least one property!'));
     } else if (props.length % 2 !== 0) {
-      console.error(chalk.redBright('You must supply a value for each property!'));
-      return;
+      return console.error(chalk.redBright('You must supply a value for each property!'));
     }
     try {
-      const model = props.toMongoBuddyModel();
-      console.log(chalk.greenBright(`New model "User" successfully created!`));
-      logger.json(model);
+      const model = props.toMongoBuddyModel(); // use custom Array method to convert arguments to model object
+      const dataForFile = JSON.stringify(model, null, 2); // stringify with linebreaks for readability at file write
+      const fileName = `models/${name}.json`; // name of file to be created
+      if (!fs.existsSync('models')) {
+        fs.mkdirSync('models'); // create `models` directory if does not exist
+      }
+      fs.writeFileSync(fileName, dataForFile); // create file
+      const { size: fileSize } = fs.statSync(fileName); // get file size
+      logger.newFile(model, fileName, fileSize); // log result
     } catch (error) {
       console.log(chalk.redBright(error));
       process.exit(1);
