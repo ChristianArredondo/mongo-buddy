@@ -1,5 +1,5 @@
 {
-  "name": "mongo-data-generator",
+  "name": "mongo-buddy",
   "version": "1.0.0",
   "description": "A GUI and CLI tool for generating mock MongoDB data",
   "preferGlobal": true,
@@ -33,6 +33,6 @@
     "mongodb": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^10.5.1"
+    "@types/node": "^10.5.2"
   }
 }
