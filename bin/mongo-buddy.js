@@ -8,19 +8,23 @@ const { logger } = require('../lib/logger');
 
 Array.prototype.toMongoBuddyModel = function() {
   const model = {}, errors = [];
-  // TODO. better workflow for pulling --name and value from array
-  const props = this.filter(el => el === '--p' || el.split(':').length === 2);
-  for (let i = 0; i < props.length; i += 2) {
-    let argStr = props[i], [prop, val, ...extras] = props[i+1].split(':');
-    // TODO. consider creating error class
-    if (prop && !val) {
-      errors.push(`Property "${prop}" has no associated type (i.e. "${prop}:string").`);
-    } else if (!prop && val) {
-      errors.push(`Type "${val}" has no matching property name`);
-    } else if ((extras || []).length) {
-      errors.push(`Property "${prop}" has multiple associated types: ${[val, ...extras].join(':')}. Properties may only have one associated type (i.e. "${prop}:${val}").`)
+  const props = this.filter(el => el === '--p' || el.includes(':'));
+  if (!props.length) {
+    errors.push('You must supply at least one property-type pair!');
+  } else if (props.length % 2 !== 0) {
+    errors.push('You must supply a property:type pair for each argument! (i.e. "name:string").');
+  } else {
+    for (let i = 0; i < props.length; i += 2) {
+      let [prop, type, ...extras] = props[i+1].split(':');
+      if (prop && !type) {
+        errors.push(`Property "${prop}" has no associated type (i.e. "${prop}:string").`);
+      } else if (type && !prop) {
+        errors.push(`Type "${type}" has no matching property name (i.e. "foo:${type}").`);
+      } else if ((extras || []).length) {
+        errors.push(`Property "${prop}" has multiple associated types: "${[type, ...extras].join(':')}". Properties may only have one associated type (i.e. "${prop}:${type}").`)
+      }
+      model[prop] = type;
     }
-    model[prop] = val;
   }
   if (errors.length) {
     throw new Error(['\n', ...errors].join('\n'));
@@ -66,22 +70,20 @@ mongoBuddy
 mongoBuddy
   .command('gen-model')
   .alias('gm')
-  .description('Generate document model to be used for generating mock data')
+  .description('Construct document model used for generating mock data')
   .option('--name <name>', 'model name (required)')
   .option('--p <prop>', 'property name and type (can be multiple, i.e. --p name:string --p age:int)')
   .action(({ parent, name }) => {
-    if (!(parent && name)) {
-      return console.error(chalk.redBright('Unable to parse arguments. Please ensure that each property follows the syntax "prop:type".'));
+    if (parent === undefined) {
+      return console.error(chalk.redBright('Error:\n \nUnable to parse arguments')); // ensure only allowed arguments are used
+    } else if (!name || typeof name !== 'string') {
+      return console.error(chalk.redBright('Error:\n \nYou must supply a name!')); // ensure name is inputted
     }
     const props = parent.rawArgs.slice(3,);
-    if (!props.length) {
-      return console.error(chalk.redBright('You must supply at least one property!'));
-    } else if (props.length % 2 !== 0) {
-      return console.error(chalk.redBright('You must supply a value for each property!'));
-    }
+    props.splice(props.indexOf(name) - 1, 2); // splice name from arguments
     try {
       const model = props.toMongoBuddyModel(); // use custom Array method to convert arguments to model object
-      const dataForFile = JSON.stringify(model, null, 2); // stringify with linebreaks for readability at file write
+      const dataForFile = JSON.stringify(model, null, 2); // stringify with linebreaks for better readability at file
       const fileName = `models/${name}.json`; // name of file to be created
       if (!fs.existsSync('models')) {
         fs.mkdirSync('models'); // create `models` directory if does not exist
