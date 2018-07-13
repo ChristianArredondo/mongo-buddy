@@ -9,7 +9,7 @@
  * OUTPUT JSON FILE
  * { "name": "string", "email": "email" }
  */
-function createModelJson(args) {
+function getMongoBuddyModel(args) {
   const model = {}, errors = [];
   if (!args.length) {
     errors.push('You must supply at least one property-type pair!');
@@ -34,4 +34,4 @@ function createModelJson(args) {
   return model;
 }
 
-module.exports = { createModelJson }
+module.exports = { getMongoBuddyModel }

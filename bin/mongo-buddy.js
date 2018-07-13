@@ -5,7 +5,9 @@ const mongoBuddy = require('commander');
 const chalk = require('chalk');
 const { mongodb } = require('../lib/mongodb');
 const { logger } = require('../lib/logger');
-const { createModelJson } = require('../utils/arrToModel.util')
+const { getMongoBuddyModel } = require('../utils/arrToModel.util');
+
+const MODELS_DIR_PATH = `${__dirname}/../models`;
 
 mongoBuddy.version('1.0.0');
 
@@ -57,11 +59,12 @@ mongoBuddy
     const args = parent.rawArgs.slice(3,);
     args.splice(args.indexOf(name) - 1, 2); // splice name and arg-string from arguments array
     try {
-      const model = createModelJson(args); // use custom Array method to convert arguments to model object
+      const model = getMongoBuddyModel(args); // use custom Array method to convert arguments to model object
+      // TODO. create class for writing/reading files
       const dataForFile = JSON.stringify(model, null, 2); // stringify with linebreaks for better readability at file
-      const fileName = `models/${name}.json`; // name of file to be created
-      if (!fs.existsSync('models')) {
-        fs.mkdirSync('models'); // create `models` directory if does not exist
+      const fileName = `${MODELS_DIR_PATH}/${name}.json`; // name of file to be created
+      if (!fs.existsSync(MODELS_DIR_PATH)) {
+        fs.mkdirSync(MODELS_DIR_PATH); // create `models` directory if does not exist
       }
       fs.writeFileSync(fileName, dataForFile); // create file
       const { size: fileSize } = fs.statSync(fileName); // get file size
